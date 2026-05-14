@@ -40,7 +40,7 @@ export function LoginForm() {
       <div>
         <h1 className="text-2xl font-semibold">Sign in</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Use the account you created in Supabase Auth.
+          Login with your email and password.
         </p>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-3">
