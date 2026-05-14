@@ -43,8 +43,7 @@ export default function SignupPage() {
       <div>
         <h1 className="text-2xl font-semibold">Create account</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          For demos, disable email confirmation in Supabase Auth settings or
-          confirm via email before signing in.
+          Create an account to get started.
         </p>
       </div>
       <form onSubmit={submit} className="flex flex-col gap-3">
