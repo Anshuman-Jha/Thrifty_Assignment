@@ -2,8 +2,6 @@
 
 > A **full-stack** assignment: shared meeting notes with **real-time collaboration**, **workspace-level security**, and an **AI copilot** that produces structured outputs, reacts when notes change, and answers **grounded questions** over your content.
 
-This README explains **what you get**, **how it is built**, and **which ideas** the implementation is meant to demonstrate—so a reviewer can understand the system in a few minutes.
-
 ---
 
 ## What I built (in one paragraph)
