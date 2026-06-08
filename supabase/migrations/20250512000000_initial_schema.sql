@@ -55,27 +55,17 @@ create index if not exists workspace_members_user_idx on public.workspace_member
 
 alter table public.workspace_members enable row level security;
 
-create policy "workspace_members_select_same_workspace"
+create policy "workspace_members_select_own"
   on public.workspace_members for select
-  using (
-    exists (
-      select 1 from public.workspace_members wm
-      where wm.workspace_id = workspace_members.workspace_id and wm.user_id = auth.uid()
-    )
-  );
+  using (user_id = auth.uid());
 
 create policy "workspace_members_insert_owner"
   on public.workspace_members for insert
   with check (
     exists (
-      select 1 from public.workspace_members wm
-      where wm.workspace_id = workspace_members.workspace_id
-        and wm.user_id = auth.uid()
-        and wm.role = 'owner'
-    )
-    or exists (
       select 1 from public.workspaces w
-      where w.id = workspace_members.workspace_id and w.created_by = auth.uid()
+      where w.id = workspace_members.workspace_id
+        and w.created_by = auth.uid()
     )
   );
 
@@ -104,6 +94,12 @@ create policy "workspaces_select_member"
     )
   );
 
+-- Breaks chicken-and-egg: trigger inserts first membership row using policies that
+-- read workspaces; member-based SELECT alone cannot see the row until that insert succeeds.
+create policy "workspaces_select_creator"
+  on public.workspaces for select
+  using (created_by = auth.uid());
+
 create policy "workspaces_insert_authenticated"
   on public.workspaces for insert
   with check (auth.uid() = created_by);
@@ -116,6 +112,34 @@ create policy "workspaces_update_member"
       where wm.workspace_id = workspaces.id and wm.user_id = auth.uid()
     )
   );
+
+-- Inserts workspace as definer (table owner) so INSERT + trigger succeed even if
+-- client RLS / RETURNING combinations misbehave. auth.uid() still gates who may create.
+create or replace function public.create_workspace(p_name text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  new_id uuid;
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated';
+  end if;
+  if trim(p_name) = '' then
+    raise exception 'name required';
+  end if;
+
+  insert into public.workspaces (name, created_by)
+  values (trim(p_name), auth.uid())
+  returning id into new_id;
+
+  return new_id;
+end;
+$$;
+
+grant execute on function public.create_workspace(text) to authenticated;
 
 -- -----------------------------------------------------------------------------
 -- Invites
