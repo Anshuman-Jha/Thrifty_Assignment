@@ -17,6 +17,7 @@ export async function POST(request: Request, ctx: Ctx) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   if (!user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
@@ -25,6 +26,7 @@ export async function POST(request: Request, ctx: Ctx) {
   }
 
   const body = await request.json().catch(() => null);
+
   const question = typeof body?.question === "string" ? body.question.trim() : "";
   if (!question) {
     return new Response(JSON.stringify({ error: "question required" }), {
@@ -90,7 +92,9 @@ export async function POST(request: Request, ctx: Ctx) {
           const token = part.choices[0]?.delta?.content ?? "";
           if (token) controller.enqueue(encoder.encode(token));
         }
-      } catch (e) {
+      }
+      catch (e) {
+        console.log(e);
         controller.enqueue(
           encoder.encode(`\n[stream error: ${e instanceof Error ? e.message : "unknown"}]`),
         );

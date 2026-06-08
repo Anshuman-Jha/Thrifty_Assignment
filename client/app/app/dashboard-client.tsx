@@ -33,12 +33,15 @@ export function DashboardClient({
     if (!n) return;
     setCreating(true);
     try {
+
       const res = await fetch("/api/workspaces", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: n }),
       });
+
       const j = await res.json();
+
       if (!res.ok) {
         alert(j.error ?? "Could not create workspace");
         return;
@@ -56,26 +59,35 @@ export function DashboardClient({
         },
         ...prev,
       ]);
+
       router.push(`/workspace/${j.workspace.id}`);
-    } finally {
+
+    }
+    finally {
       setCreating(false);
     }
   };
 
   const remove = async (id: string) => {
+
     if (!confirm("Delete this workspace and all notes?")) return;
+
     const res = await fetch(`/api/workspaces/${id}`, { method: "DELETE" });
+
     if (!res.ok) {
       const j = await res.json().catch(() => ({}));
       alert(j.error ?? "Delete failed");
       return;
     }
+
     setWorkspaces((prev) => prev.filter((w) => w.id !== id));
     refresh();
   };
 
   const signOut = async () => {
+
     const supabase = createBrowserSupabaseClient();
+    
     await supabase.auth.signOut();
     router.push("/auth/login");
     router.refresh();

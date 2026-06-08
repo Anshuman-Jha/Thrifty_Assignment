@@ -141,7 +141,7 @@ export function AiPanel({ workspaceId }: { workspaceId: string }) {
       }
       const dec = new TextDecoder();
       let acc = "";
-      for (;;) {
+      for (; ;) {
         const { done, value } = await reader.read();
         if (done) break;
         acc += dec.decode(value, { stream: true });
@@ -165,11 +165,10 @@ export function AiPanel({ workspaceId }: { workspaceId: string }) {
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
-              tab === t.id
+            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${tab === t.id
                 ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
                 : "text-zinc-600 hover:bg-white/60 dark:text-zinc-400 dark:hover:bg-zinc-800/60"
-            }`}
+              }`}
           >
             <t.icon className="size-3.5 opacity-70" />
             {t.label}
@@ -282,6 +281,7 @@ function SummaryTab({
   useEffect(() => {
     setText(data.text ?? "");
   }, [row?.updated_at]);
+
   if (!row) {
     return (
       <p className="text-zinc-500">
@@ -509,15 +509,19 @@ function EmailTab({
     subject?: string;
     body?: string;
   };
+
   const [subject, setSubject] = useState(data.subject ?? "");
   const [body, setBody] = useState(data.body ?? "");
+
   useEffect(() => {
     setSubject(data.subject ?? "");
     setBody(data.body ?? "");
   }, [row?.updated_at]);
+
   if (!row) {
     return <p className="text-zinc-500">No draft email yet.</p>;
   }
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">

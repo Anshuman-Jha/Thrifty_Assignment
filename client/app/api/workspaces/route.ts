@@ -35,14 +35,36 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
 
+  const { data: newId, error: rpcErr } = await supabase.rpc("create_workspace", {
+    p_name: name,
+  });
+
+  if (rpcErr) {
+    return NextResponse.json({ error: rpcErr.message }, { status: 500 });
+  }
+
+  if (typeof newId !== "string") {
+    return NextResponse.json(
+      { error: "create_workspace did not return an id — run migration 20250512000005_create_workspace_rpc.sql in Supabase SQL editor." },
+      { status: 500 },
+    );
+  }
+
   const { data, error } = await supabase
     .from("workspaces")
-    .insert({ name, created_by: user.id })
     .select("id, name, created_at, updated_at")
+    .eq("id", newId)
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({
+      workspace: {
+        id: newId,
+        name,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    });
   }
 
   return NextResponse.json({ workspace: data });

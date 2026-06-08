@@ -42,6 +42,7 @@ export default function InvitePage() {
         return;
       }
       const res = await fetch(`/api/invites/${token}`, { method: "POST" });
+      
       const j = await res.json();
       if (!res.ok) {
         setError(j.error ?? "Could not accept invite");

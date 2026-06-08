@@ -21,8 +21,10 @@ export function CollaborativeEditor({
   initialYjsBase64,
   onPlainTextChange,
 }: Props) {
+
   const ydoc = useMemo(() => {
     const d = new Y.Doc();
+
     if (initialYjsBase64) {
       try {
         Y.applyUpdate(d, base64ToUint8(initialYjsBase64), "db");
@@ -40,12 +42,15 @@ export function CollaborativeEditor({
       const update = Y.encodeStateAsUpdate(ydoc);
       const b64 = uint8ToBase64(update);
       const plain_text = ed.getText();
+
       await fetch(`/api/workspaces/${workspaceId}/document`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ yjs_state_base64: b64, plain_text }),
       });
+
       if (indexTimer.current) clearTimeout(indexTimer.current);
+
       indexTimer.current = setTimeout(() => {
         void fetch(`/api/workspaces/${workspaceId}/index`, { method: "POST" });
       }, 4000);
@@ -91,7 +96,9 @@ export function CollaborativeEditor({
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
+
     const room = `yjs:${workspaceId}`;
+
     const ch = supabase.channel(room, {
       config: { broadcast: { self: false } },
     });
@@ -110,18 +117,21 @@ export function CollaborativeEditor({
 
     const onDocUpdate = (u: Uint8Array, origin: unknown) => {
       if (origin === "remote") return;
+
       void ch.send({
         type: "broadcast",
         event: "yjs",
         payload: { b64: uint8ToBase64(u) },
       });
     };
+
     ydoc.on("update", onDocUpdate);
 
     return () => {
       ydoc.off("update", onDocUpdate);
       void supabase.removeChannel(ch);
     };
+
   }, [workspaceId, ydoc]);
 
   useEffect(() => {

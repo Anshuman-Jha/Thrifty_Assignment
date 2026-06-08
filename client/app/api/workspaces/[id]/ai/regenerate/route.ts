@@ -21,6 +21,7 @@ export async function POST(request: Request, ctx: Ctx) {
 
   const body = await request.json().catch(() => null);
   const t = body?.artifact_type as string | undefined;
+  
   if (!t || !artifactTypes.includes(t as ArtifactType)) {
     return NextResponse.json({ error: "Invalid artifact_type" }, { status: 400 });
   }

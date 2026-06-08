@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { byteaToBase64 } from "@/lib/bytea";
+import { isSkipAuth } from "@/lib/demo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { WorkspaceShell } from "./workspace-shell";
 
@@ -15,8 +16,18 @@ export default async function WorkspacePage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) {
+  const skip = isSkipAuth();
+
+  if (!user && !skip) {
     redirect(`/auth/login?next=${encodeURIComponent(`/workspace/${id}`)}`);
+  }
+
+  if (!user && skip) {
+    redirect("/app");
+  }
+
+  if (!user) {
+    redirect("/app");
   }
 
   const { data: ws, error } = await supabase
